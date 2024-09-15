@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .quiz-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+        }
+        .button-container {
+            margin-top: 20px;
+        }
+        button {
+            display: block;
+            margin: 5px 0;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: lightgray;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        button.correct {
+            background-color: lightgreen;
+            color: white;
+        }
+        button.incorrect {
+            background-color: lightcoral;
+            color: white;
+        }
+        #feedback {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        #score {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1>Word Quiz</h1>
+        <p id="question">Click "Start" to begin.</p>
+        
+        <div class="button-container">
+            <button onclick="nextQuestion()">Start</button>
+        </div>
+        
+        <div id="feedback"></div>
+        <div id="score">Score: 0</div>
+    </div>
+    
+    <script>
+        const words = {
+            "Bhris mé": "I broke",
+            "Bhuail mé": "I struck",
+            "Chaith mé": "I threw",
+            "Sheid mé": "I blew",
+            "Stad mé": "I stopped",
+            "Scríobh mé": "I wrote",
+            "Stop mé": "I stopped",
+            "Chuir mé": "I put",
+            "Dhíol mé": "I sold",
+            "Cheap mé": "I thought",
+            "Chas mé": "I turned",
+            "Thóg mé": "I took",
+            "Dhún mé": "I closed",
+            "Chan mé": "I sang",
+            "Chíor mé": "I combed",
+            "Gháir mé": "I laughed",
+            "Cheangail mé": "I tied",
+            "Chríochnaigh mé": "I finished",
+            "Cheannaigh mé": "I bought",
+            "Chabhraigh mé": "I helped",
+            "Dhúisigh mé": "I awoke",
+            "D'ísligh mé": "I lowered",
+            "Thosaigh mé": "I began",
+            "Thriomaigh mé": "I dried",
+            "D'imir mé": "I played",
+            "Scrudaigh mé": "I examined",
+            "Thit mé": "I fell",
+            "Léigh mé": "I read",
+            "Léim mé": "I jumped",
+            "Throid mé": "I fought",
+            "Rith mé": "I ran",
+            "Leag mé": "I knocked",
+            "Scuab mé": "I brushed",
+            "D'òl mé": "I drank",
+            "D'éist mé": "I listened",
+            "D'fhan mé": "I stayed",
+            "D'íoc mé": "I paid",
+            "D'fhéach mé": "I looked",
+            "D'fhás mé": "I grew",
+            "Ghoid mé": "I stole",
+            "D'fhág mé": "I left",
+            "Cheartaigh mé": "I corrected",
+            "Dheisigh mé": "I fixed",
+            "Ghortaigh mé": "I hurt",
+            "Chruinnigh mé": "I gathered",
+            "Chuidigh mé": "I helped",
+            "Cheistigh mé": "I questioned",
+            "Chuardaigh mé": "I searched",
+            "Bhrostaigh mé": "I hurried",
+            "Mhothaigh mé": "I felt",
+            "Shleamhnaigh mé": "I slipped",
+            "Chuimhnigh mé": "I remembered",
+            "Líon mé": "I filled",
+            "Shiúil mé": "I walked",
+            "Las mé": "I lit",
+            "Ghlan mé": "I cleaned",
+            "Chaill mé": "I lost",
+            "Luigh mé": "I lay",
+            "Nígh mé": "I washed",
+            "Thuill mé": "I earned",
+            "Shroich mé": "I arrived",
+            "Chroch mé": "I hung",
+            "Phioc mé": "I picked",
+            "Ghearr mé": "I cut",
+            "Shín mé": "I stretched",
+            "Sheinn mé": "I played",
+            "Sheas mé": "I stood",
+            "Mhaisigh mé": "I decorated",
+            "D'imigh mé": "I went",
+            "Mhínigh mé": "I explained",
+            "Bhailigh mé": "I gathered",
+            "D'oscail mé": "I opened",
+            "D'oibrigh mé": "I worked",
+            "Bheannaigh mé": "I blessed",
+            "Chodail mé": "I slept",
+            "Mharaigh mé": "I killed",
+            "D'éirigh mé": "I got up",
+            "Bhí mé": "I was",
+            "Chonaic mé": "I saw",
+            "Thug mé": "I gave",
+            "Chuaigh mé": "I went",
+            "Rug mé": "I caught",
+            "Fuair mé": "I got",
+            "Dúirt mé": "I said",
+            "D'ith mé": "I ate",
+            "Thàinig mé": "I came",
+            "Chuala mé": "I heard",
+            "Rinne mé": "I made"
+        };
+
+        let currentWord = '';
+        let correctAnswer = '';
+        let score = 0;
+
+        function getRandomAnswers(correct) {
+            const answers = new Set();
+            const values = Object.values(words);
+            while (answers.size < 3) {
+                let randomIndex = Math.floor(Math.random() * values.length);
+                let randomAnswer = values[randomIndex];
+                if (randomAnswer !== correct) {
+                    answers.add(randomAnswer);
+                }
+            }
+            answers.add(correct);
+            return Array.from(answers).sort(() => Math.random() - 0.5);
+        }
+
+        function nextQuestion() {
+            const keys = Object.keys(words);
+            currentWord = keys[Math.floor(Math.random() * keys.length)];
+            correctAnswer = words[currentWord];
+            
+            const answers = getRandomAnswers(correctAnswer);
+            document.getElementById('question').innerText = `What is the meaning of '${currentWord}'?`;
+            
+            let buttonHTML = '';
+            answers.forEach(answer => {
+                buttonHTML += `<button onclick="checkAnswer('${answer}', this)">${answer}</button>`;
+            });
+            document.querySelector('.button-container').innerHTML = buttonHTML;
+            document.querySelectorAll('button').forEach(btn => btn.classList.remove('correct', 'incorrect'));
+        }
+
+        function checkAnswer(answer, button) {
+            const feedbackElement = document.getElementById('feedback');
+            const buttons = document.querySelectorAll('.button-container button');
+            if (answer === correctAnswer) {
+                feedbackElement.innerText = 'Correct!';
+                button.classList.add('correct');
+                score += 1;
+                document.getElementById('score').innerText = `Score: ${score}`;
+                setTimeout(() => {
+                    feedbackElement.innerText = ''; // Hide the feedback
+                    nextQuestion(); // Move to the next question
+                }, 1000); // Wait 1 second before moving to the next question
+            } else {
+                feedbackElement.innerText = 'Try again!';
+                button.classList.add('incorrect');
+                score -= 1;
+                document.getElementById('score').innerText = `Score: ${score}`;
+                // Add a brief delay before resetting colors
+                setTimeout(() => {
+                    document.querySelectorAll('button').forEach(btn => btn.classList.remove('correct', 'incorrect'));
+                }, 500); // Delay before removing color
+            }
+        }
+
+        // Start the quiz when the page loads
+        window.onload = function() {
+            nextQuestion();
+        };
+    </script>
+</body>
+</html>
